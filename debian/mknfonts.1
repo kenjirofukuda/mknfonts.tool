@@ -1,0 +1,26 @@
+.TH MKNFONTS 1 "March 12, 2004"
+.SH NAME
+mknfonts \- create nfont packages
+.SH SYNOPSIS
+.B mknfonts
+.RI [ options ] " files" ...
+.SH DESCRIPTION
+This manual page documents briefly the
+.B mknfonts
+command.
+This manual page was written for the Debian distribution
+because the original program does not have a manual page.
+.PP
+\fBmknfonts\fP doesn't completely automate the process of creating nfont-packages, but it can do most of the bulk work for you. Just put a bunch of fonts (.ttf, .pfa, .pfb, .afm, ...; most formats that freetype can handle and provide postscript names for) in an empty directory and run:
+.TP
+mknfonts *
+.TP
+You'll get a bunch of packages ready to be moved to .../Library/Fonts/. For best results, you'll want to review the packages. Most traits/weights (besides the really standard ones) won't be handled automatically, so you'll have to add or tweak them manually if you want GNUstep to know about them.
+.SH OPTIONS
+These programs follow the usual GNU command line syntax, with long
+options starting with two dashes (`-').
+.SH SEE ALSO
+.BR GNUstep (7).
+.SH AUTHOR
+This manual page was written by G\[:u]rkan Seng\[:u]n <gurkan@linuks.mine.nu>,
+for the Debian project (but may be used by others).

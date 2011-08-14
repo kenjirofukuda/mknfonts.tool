@@ -1,0 +1,294 @@
+I've used [ ] to mark parts that aren't _really_ part of the spec, eg.
+TODOs, undecided issues, and implementation notes.
+
+
+.nfont packages
+===============
+
+[.nfont packages are used by back-art to load fonts (and may be used by
+back-gslib as well, although that's undecided).]
+
+
+An .nfont package (ie. a directory with the extension ".nfont") contains
+a single, complete family. The directory contains a FontInfo.plist with
+information about the family, and any files needed to render the faces
+in the family, referenced from FontInfo.plist. FontInfo.plist contains a
+dictionary.
+
+By default, the family name is the name of the font package (without the
+.nfont extension), though an explicit Family key can change it.
+
+.nfont packages are located in Library/Fonts/ of any domain. When
+searching for fonts, .nfont packages in the user domain override any
+.nfont packages with the same name in the the local domain, which in turn
+override any in the network domain, which override any in the system
+domain.
+
+
+The top-level dictionary
+------------------------
+
+The only required key in FontInfo.plist is "Faces", an array of faces in
+the package.
+
+
+Optional keys that are parsed are:
+
+Traits
+  Sets the default family traits.
+
+Weight
+  Sets the default family weight.
+
+Family
+  Sets the family name explicitly.
+
+
+Other arbitrary keys can be added to provide more information, and their
+values will be ignored, but since future changes might cause clashes,
+it's recommended that the following be used:
+
+Version
+  A version number for the font _package_ (not the font files). When a new,
+  changed version of the font package is released (eg. with updated font
+  files, or just with changes to FontInfo.plist), this should be increased.
+  It is highly recommended that this key be included.
+  [TODO: Make it required? Define the format of the version number, and a
+  default number if the key is missing?]
+  
+Foundry
+  The font's foundry.
+
+FontLicense
+  The license that the font files are covered by.
+
+FontCopyright
+  Copyright statement for the font files.
+
+[
+Ideas:
+
+License
+Copyright
+  Copyright and license for FontInfo.plist. Necessary?
+
+Packager
+  Name and contact information of the person who created the .nfont package.
+
+Description
+  Free text description of the font.
+
+URL
+
+TODO: talk to fabien about the .nfont inspector
+]
+
+
+Faces
+-----
+
+The Faces array contains a dictionary for each face.
+
+The font name (used eg. in [NSFont +fontWithName:size:]) is the value of
+the PostScriptName key. The display name is formed by appending a space
+and the localized face name to the family name.
+
+
+Keys in the face dictionary:
+
+PostScriptName (required)
+  The face's postscript name. This is the name used as the face's name for
+  most internal purposes.
+
+
+(exactly one of Name and LocalizedNames must be present)
+Name
+  The face name, in English. The name will be automatically localized by
+  looking it up in a list of standard names and translations. This means
+  that new languages can be added in one place, and all faces will be
+  updated. It only works for certain standard names, but for those names,
+  this is the recommended way of specifying the face name.
+  [TODO
+  Define which names are 'standard'. Will include _really_ standard stuff
+  like "Bold", "Italic", "Regular", etc.
+  ]
+
+LocalizedNames
+  A dictionary that maps languages to localized face names. Each key is
+  a language name [like the ones you'd use for localized resources, etc.;
+  there should be docs about that], and the value is the name of the face
+  in that language. [If the user's preferred language can't be found,
+  "English" will be used if present, otherwise a random entry. TODO: match
+  behavior for LANGUAGES]
+  The dictionary should contain an entry for "English". Automatic trait
+  parsing won't work if there isn't an entry for "English".
+  [This needs a reference to some "How localization works" specs]
+  
+
+Files
+  An array of files to load for this face. (Technically, the first file is
+  loaded with FT_New_Face(), and subsequent files using FT_Attach_File().
+  Thus, the main file (according to freetype) for the face needs to be
+  first. [In practice this means that the .pfa/.pfb file needs to come
+  before any .afm/.pfm files.])
+
+  By default, this is empty and there is no general way to render this font.
+
+ScreenFonts
+  A dictionary of (integer) pixel sizes, as strings, and the font files to
+  use for that size instead of the files specified in the Files key. Each
+  key is a size, in pixels. Each value is an array of files to load (just
+  like the value of the "Files" key).
+
+Traits
+  The traits of this face.
+
+Weight
+  The weight of this face.
+
+[TODO
+Add a way to remove traits from the family traits? xor instead of or?
+]
+
+[TODO
+RenderHints_hack
+  A bit field with hints for the font renderer. This is a hack and needs to,
+  be cleaned up, but the format is (from back/Source/art/ftfont.m):
+
+  hinting hints
+    0: 1 to use the auto-hinter
+    1: 1 to use hinting
+  byte 0 and 1 contain hinting hints for un-antialiased and antialiased
+  rendering, respectively.
+
+   16: 0=un-antialiased by default, 1=antialiased by default
+]
+
+
+Traits and weights
+------------------
+
+Weight values are integers 1<=x<=14. Lower is lighter, higher is heavier:
+
+  4  book
+  5  regular
+  6  medium
+  9  bold
+ 11  heavy
+
+[There's a complete list in gui/Source/GSFontInfo.m, but I don't know how
+much of this is 'standard' and how much is robust parsing in there.]
+
+The default family weight is 5.
+
+The weight of a face is determined from:
+ 1. An explicit "Weight" key in the face dictionary, if present.
+ 2. A weight determined from the face name, if possible.
+ 3. The family weight.
+
+
+Trait values are combinations of the NS*FontMask flags in NSFontManager.
+[Insert neat link to NSFont/NSFontManager traits/weight documentation.]
+
+The default family traits are 0.
+
+The traits of a face is the binary or of the face traits and the family
+traits. If the face dictionary has an explicit "Traits" key, the face
+traits get that value. If not, the face name is parsed to find the face
+traits. If the parsing fails or doesn't find any traits in the name, the
+face traits are 0.
+
+
+[TODO: Specify how name parsing is done?]
+
+
+Example FontInfo.plist
+----------------------
+
+An example of a normal FontInfo.plist for a family.
+
+Arial.nfont/FontInfo.plist
+--- cut here ---
+{
+	Foundry = "Monotype";
+	Faces = (
+	{
+		Name = "Regular";
+		PostScriptName = "ArialMT";
+		Files = ("arial.ttf");
+		RenderHints_hack = 0x00202;
+	},
+	{
+		Name = "Bold";
+		PostScriptName = "Arial-BoldMT";
+		Files = ("arialbd.ttf");
+	},
+	{
+		LocalizedNames = {
+			English = "Rounded Bold";
+			Swedish = "Rundad Fet";
+		};
+		PostScriptName = "ArialRoundedMTBold";
+		Files = ("arlrdbd.ttf");
+	}
+	);
+	Version = 2;
+}
+--- cut here ---
+
+
+An example of a package with an explicitly specified family name.
+
+Arial Narrow.nfont/FontInfo.plist
+--- cut here ---
+{
+    Faces = (
+	{
+	    Files = (
+		ArialNi.ttf
+	    );
+	    Name = "Narrow Italic";
+	    PostScriptName = "ArialNarrow-Italic";
+	},
+	{
+	    Files = (
+		arialn.ttf
+	    );
+	    Name = Narrow;
+	    PostScriptName = ArialNarrow;
+	}
+    );
+    Family = Arial;
+}
+--- cut here ---
+
+[
+TODO?
+
+.font packages
+--------------
+
+back-art also loads .font packages, though it's a bit late to specify them.
+Since a .font package really only contains one face, it isn't a perfect
+match, but it works.
+
+Traits and weights are determined by parsing the names. An .nfont package
+in a later (or same) domain will override all .font packages for that family,
+and .font packages in a later domain will override .nfont or .font packages
+in an earlier domain (so all .font packages for a family need to be in the
+same domain).
+]
+
+--
+Author: Alexander Malmberg <alexander@malmberg.org>
+Copyright 2002 Alexander Malmberg
+
+Thanks to:
+Jeff Teunissen
+
+--
+
+$Revision: 1.9 $
+$Date: 2002/10/01 16:47:27 $
+
+

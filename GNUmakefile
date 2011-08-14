@@ -10,7 +10,7 @@ VERSION = 0.5
 ADDITIONAL_OBJCFLAGS += -Wall -O2
 
 ADDITIONAL_INCLUDE_DIRS += `freetype-config --cflags`
-ADDITIONAL_LDFLAGS += `freetype-config --libs`
+ADDITIONAL_TOOL_LIBS += `freetype-config --libs`
 
 mknfonts_OBJC_FILES = mknfonts.m
 

@@ -140,7 +140,7 @@ static struct
 	FT_Face face;
 	int i;
 	const char *psname;
-	int foo,bar;
+	unsigned int foo,bar;
 
 	for (i=1;i<[files count];i++)
 	{
@@ -158,21 +158,21 @@ static struct
 
 	if (FT_New_Face(ftlib,[[files objectAtIndex: 0] cString],0,&face))
 	{
-		fprintf(stderr,"unable to open %@, ignoring\n",[files objectAtIndex: 0]);
+		GSPrintf(stderr,@"unable to open %@, ignoring\n",[files objectAtIndex: 0]);
 		return NO;
 	}
 	for (i=1;i<[files count];i++)
 	{
 		if (FT_Attach_File(face,[[files objectAtIndex: i] cString]))
 		{
-			fprintf(stderr,"warning: unable to attach %@\n",[files objectAtIndex: i]);
+			GSPrintf(stderr,@"warning: unable to attach %@\n",[files objectAtIndex: i]);
 		}
 	}
 
 	psname=FT_Get_Postscript_Name(face);
 	if (!psname)
 	{
-		fprintf(stderr,"couldn't get postscript name for %@, ignoring\n",[files objectAtIndex: 0]);
+		GSPrintf(stderr,@"couldn't get postscript name for %@, ignoring\n",[files objectAtIndex: 0]);
 		return NO;
 	}
 	postScriptName=[[NSString alloc] initWithCString: psname];
@@ -182,7 +182,7 @@ static struct
 
 	if (traits_from_string(faceName,&foo,&bar))
 	{
-		fprintf(stderr,"warning: couldn't fully parse '%@' (%@)\n",faceName,postScriptName);
+		GSPrintf(stderr,@"warning: couldn't fully parse '%@' (%@)\n",faceName,postScriptName);
 	}
 
 	FT_Done_Face(face);
@@ -284,7 +284,7 @@ int main(int argc, char **argv)
 		NSFileManager *fm=[NSFileManager defaultManager];
 		NSEnumerator *e;
 		NSString *family;
-		int i,c,j;
+		int i,c;
 
 		NSMutableDictionary *family_info;
 		NSMutableArray *faces;
@@ -310,12 +310,6 @@ int main(int argc, char **argv)
 			{
 				fi=[faceinfos objectAtIndex: i];
 				[faces addObject: [fi faceInfoDictionary]];
-				for (j=0;j<[fi->files count];j++)
-				{
-					[fm movePath: [fi->files objectAtIndex: j]
-						toPath: [path stringByAppendingPathComponent: [[fi->files objectAtIndex: j] lastPathComponent]]
-						handler: nil];
-				}
 			}
 
 			[family_info

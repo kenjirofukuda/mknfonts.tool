@@ -1,0 +1,60 @@
+#!/bin/sh
+
+input=/usr/share/fonts/
+output=/usr/lib/GNUstep/System/Library/Fonts/
+# if non root user ~/GNUstep/Library/Fonts/
+if [ "`id`" != "`id root`" ]; then
+    mkdir -p ~/GNUstep/Library/Fonts/
+    output=`echo ~/GNUstep/Library/Fonts/`
+fi
+
+for z in ttf pfa pfb otf; do
+    cd $output
+    find $input -name "*.${z}" -type f -print | while read a; do
+	if test -f $a; then
+	    bna=`basename "$a"`
+	    echo "Preparing $bna for nfont"
+	    ln -s "$a" "$bna" 2>/dev/null
+        fi
+    done
+done
+#symlinks -dv $output
+c=0
+b=""
+printf "Creating nfonts"
+for z in ttf pfa pfb otf; do
+    for a in $z; do
+	b="$b *.${a}"
+	c=$((c+1))
+	if test $c -eq 15; then
+	    mknfonts $b 2>/dev/null
+	    printf "."
+	    b=""
+	    c=0
+	fi
+    done
+    mknfonts $b 2>/dev/null
+    echo
+done
+#cd
+
+exit
+
+#the bottom one is ugly and the top one too (but the top one is faster)
+#and we need it until gnustep has the argumentlist limit removed.
+
+#!/bin/sh
+
+input=/usr/share/fonts/
+output=/usr/lib/GNUstep/System/Library/Fonts/
+mask="*.ttf"
+
+cd $output
+find $input -name "$mask" -type f -print |while read a; do
+    ln -s "$a" "`basename "$a"`" 2>/dev/null
+done
+#symlinks -dv $output
+for a in $mask; do
+    mknfonts "$a"
+done
+#cd

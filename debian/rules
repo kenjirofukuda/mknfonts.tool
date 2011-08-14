@@ -1,0 +1,54 @@
+#!/usr/bin/make -f
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+include /usr/share/GNUstep/debian/config.mk
+
+export GNUSTEP_MAKEFILES := $(GS_MAKE_DIR)
+
+LDFLAGS := -Wl,-z,defs -Wl,--as-needed
+
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+optim := debug=yes
+endif
+
+build: build-stamp
+build-stamp:
+	dh_testdir
+	$(MAKE) $(optim) messages=yes LDFLAGS="$(LDFLAGS)"
+	touch $@
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp
+	$(MAKE) distclean
+	dh_clean 
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_prep
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/mknfonts.tool \
+	  GNUSTEP_INSTALLATION_DOMAIN=SYSTEM
+	cp update-nfonts $(CURDIR)/debian/mknfonts.tool/usr/bin
+
+binary-indep:
+
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs 
+	dh_installdocs
+	dh_installman
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install

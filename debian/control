@@ -1,0 +1,21 @@
+Source: mknfonts.tool
+Section: gnustep
+Priority: optional
+Maintainer: Debian GNUstep maintainers <pkg-gnustep-maintainers@lists.alioth.debian.org>
+Uploaders: Yavor Doganov <yavor@gnu.org>
+Build-Depends: debhelper (>= 7),
+	       libgnustep-base-dev,
+	       libfreetype6-dev
+Standards-Version: 3.8.4
+Vcs-Arch: http://arch.debian.org/arch/pkg-gnustep/gnustep/mknfonts-tool--debian--1.0
+
+Package: mknfonts.tool
+Architecture: any
+Depends: ${shlibs:Depends},
+	 ${misc:Depends}
+Description: Create nfont packages for GNUstep
+ This doesn't completely automate the process of creating nfont-packages,
+ but it can do most of the bulk work for you.
+ .
+ This works with .ttf, .pfa, .pfb, .afm, most formats that freetype can handle
+ and provide postscript names for.
