@@ -1,3 +1,9 @@
+mknfonts.tool (0.5-11.0~upfmipal1) precise; urgency=low
+
+  * Rebuild with support for libdispatch.
+
+ -- Esteve Fernandez <esteve@apache.org>  Fri, 09 Nov 2012 13:35:26 +0000
+
 mknfonts.tool (0.5-11build2) oneiric; urgency=low
 
   * Rebuild with GCC 4.6.
