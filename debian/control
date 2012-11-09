@@ -5,7 +5,9 @@ Maintainer: Debian GNUstep maintainers <pkg-gnustep-maintainers@lists.alioth.deb
 Uploaders: Yavor Doganov <yavor@gnu.org>
 Build-Depends: debhelper (>= 7),
 	       libgnustep-base-dev,
-	       libfreetype6-dev
+	       libfreetype6-dev,
+	       libobjc4-dev,
+	       clang
 Standards-Version: 3.8.4
 Vcs-Arch: http://arch.debian.org/arch/pkg-gnustep/gnustep/mknfonts-tool--debian--1.0
 
